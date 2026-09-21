@@ -399,6 +399,18 @@
       "documents": [
         "src/remote-control/"
       ]
+    },
+    {
+      "path": "integrations/chatgpt-web.md",
+      "tier": 3,
+      "title": "ChatGPT Web coexistence",
+      "scope": "Optional local harness relay and shared catalog ownership.",
+      "documents": [
+        "src/server/",
+        "src/codex/",
+        "src/config/",
+        "src/types/"
+      ]
     }
   ],
   "contracts": {
@@ -493,10 +505,6 @@
       {
         "path": "src/sidecar/",
         "reason": "no doc names a path here; ops/service-and-sidecars.md describes sidecar behavior in prose only"
-      },
-      {
-        "path": "src/types/",
-        "reason": "shared declarations plus the tool-name and wire-pin resolvers, which no doc currently describes"
       }
     ],
     "unboundInvariants": [

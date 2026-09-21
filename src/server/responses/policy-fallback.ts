@@ -1,4 +1,5 @@
 import { comboFailureDecision } from "../../combos/failover";
+import { relayChatgptWebRequest } from "../chatgpt-web-relay";
 import { readBoundedResponseBody } from "../../lib/bounded-body";
 import { finishRequestAttempt, type RequestLogContext } from "../request-log";
 import { linkRequestSessionLane } from "../request-log-conversation";
@@ -125,6 +126,8 @@ export async function handleResponsesWithPolicyFallback(
   options: CoreOptions = {},
   deps: PolicyFallbackDeps = {},
 ): Promise<Response> {
+  const web = await relayChatgptWebRequest(req, config, logCtx, options);
+  if (web) return web;
   const runCore = deps.runCore ?? handleResponsesCore;
   let requestBodyReadNotified = false;
   let storedPool401ReplayDispatched = false;

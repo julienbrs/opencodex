@@ -423,3 +423,8 @@ The download `cline-config-bundle.json` contains two native document members: `s
 `providers.json`, and `catalog` for `models.json`. It is not itself a Cline settings file. Prefer
 the integration command for a journaled merge and rollback. Remote admission wiring is not
 supported by this generated integration; it requires unauthenticated loopback access.
+
+
+## ChatGPT Web backend (fork)
+
+The optional [ChatGPT Web backend](/guides/chatgpt-web/) coexists with Gemini and native Codex models. OpenCodex owns the shared route; the Web process owns its browser and exports its model metadata.

@@ -2,6 +2,7 @@
 // Public surface preserved exactly; importers keep using "src/server/responses".
 import { handleResponsesCompact as handleResponsesCompactImpl } from "./responses/compact";
 import { requestPacingOverloadResponse } from "./responses/pacing-overload";
+import { relayChatgptWebRequest } from "./chatgpt-web-relay";
 
 export { buildToolBridgeMaps, isV1CollabSurface, collabSurface, multiAgentGuidanceText, V2_GUIDANCE_CHAR_BUDGET, injectDeveloperMessage } from "./responses/collaboration";
 export type { MultiAgentGuidanceOptions, MultiAgentGuidanceDeps } from "./responses/collaboration";
@@ -16,6 +17,8 @@ export async function handleResponsesCompact(
   ...args: Parameters<typeof handleResponsesCompactImpl>
 ): Promise<Response> {
   try {
+    const web = await relayChatgptWebRequest(args[0], args[1], args[2], args[5]);
+    if (web) return web;
     return await handleResponsesCompactImpl(...args);
   } catch (error) {
     const overload = requestPacingOverloadResponse(error);

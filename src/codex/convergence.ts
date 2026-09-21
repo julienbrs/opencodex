@@ -1,3 +1,4 @@
+import { mergeChatgptWebCatalog } from "./catalog/chatgpt-web";
 import { join } from "node:path";
 
 import { getConfigDir, saveConfigPreservingClaudeCode, websocketsEnabled, withExpectedConfigGenerationSync } from "../config";
@@ -396,7 +397,7 @@ function prepareCatalog(
   // `writeRetainedCatalogSync`, so the #4730 uniqueness guard has to stand here too or the same
   // `source-invalid` rejection returns by a different route. Silent because this merge runs under
   // `warningPolicy: "suppress"`.
-  catalog.models = enforceCatalogSlugUniqueness(mergedModels, false);
+  catalog.models = enforceCatalogSlugUniqueness(mergeChatgptWebCatalog(mergedModels, config), false);
   return catalog;
 }
 

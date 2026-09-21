@@ -1,5 +1,7 @@
 # Responses Transport
 
+Optional ChatGPT Web backend routing follows the [coexistence contract](../integrations/chatgpt-web.md).
+
 Native result continuations and function-result injection follow [the mode-specific result and control contract](streaming-health.md#experimental-native-function-result-injection); this surface does not infer upstream support or alter its defaults.
 
 Native steering follows [the shared WebSocket contract](streaming-health.md#experimental-native-mid-turn-steering); this surface's defaults remain unchanged.

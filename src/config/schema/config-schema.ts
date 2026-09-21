@@ -1,3 +1,4 @@
+import { isAbsolute } from "node:path";
 import * as z from "zod/v4";
 import {
   agentTaskRecoverySchema,
@@ -61,6 +62,10 @@ import { parseDesktopProfile } from "../../claude/desktop-profile";
 import { DEFAULT_APP_OWNED_MEMORY_BUDGET_BYTES, MAX_APP_OWNED_MEMORY_BUDGET_MB, MIN_APP_OWNED_MEMORY_BUDGET_MB } from "../../lib/app-owned-memory";
 
 export const configSchema = z.object({
+  chatgptWeb: z.object({
+    baseUrl: z.url().regex(/^http:\/\/127\.0\.0\.1:[1-9][0-9]{0,4}\/v1\/?$/),
+    catalogPath: z.string().refine(isAbsolute, "catalogPath must be absolute"),
+  }).strict().optional(),
   codexNativeSteering: z.boolean().optional().catch(false),
   codexNativeInjection: z.boolean().optional().catch(false),
   port: z.number().int().min(0).max(65535).default(10100),

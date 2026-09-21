@@ -1,3 +1,4 @@
+import { mergeChatgptWebCatalog } from "../../codex/catalog/chatgpt-web";
 import type { Server, ServerWebSocket } from "bun";
 import type { StartServerDeps } from "./startup-warnings";
 import {
@@ -1012,7 +1013,7 @@ export function createServeOptions(ctx: ServeOptionsContext) {
           );
           return jsonResponse({
             models: applyNativeVisibility(
-              entries,
+              mergeChatgptWebCatalog(entries, config),
               disabledModels,
               accountSelectors.length > 0,
               new Set(accountNativeSlugs),

@@ -1,5 +1,7 @@
 # Model Catalog
 
+Optional ChatGPT Web backend routing follows the [coexistence contract](integrations/chatgpt-web.md).
+
 Native result continuations and function-result injection follow [the mode-specific result and control contract](transports/streaming-health.md#experimental-native-function-result-injection); this surface does not infer upstream support or alter its defaults.
 Explicit Codex CLI installation observation supplies no selected-runtime proof to catalog discovery or publication. See the [read-only observation contract](runtime.md#explicit-codex-cli-installation-observation).
 

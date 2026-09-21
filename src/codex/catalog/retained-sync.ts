@@ -1,3 +1,4 @@
+import { mergeChatgptWebCatalog } from "./chatgpt-web";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadConfig, websocketsEnabled } from "../../config";
@@ -523,6 +524,7 @@ function writeRetainedCatalogSync({
       warningPolicy: "emit",
     },
   });
+  catalog.models = mergeChatgptWebCatalog(catalog.models, config);
   clampCatalogModelsToCodexSupport(catalog.models);
   finalizeAutoReviewModelOverride(catalog.models, catalogModelsForMerge, config);
   // Last mutation before serialization; see `enforceCatalogSlugUniqueness` for why the ordering

@@ -392,6 +392,8 @@ export interface OcxClientConnectionConfig {
 }
 
 export interface OcxConfig {
+  /** Optional local harness backend; owns its browser and exports its model metadata. */
+  chatgptWeb?: { baseUrl: string; catalogPath: string };
   port: number;
   /** Runtime topology role. Absence preserves the historical standalone behavior. */
   runtimeRole?: OcxRuntimeRole;
