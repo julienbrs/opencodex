@@ -1,0 +1,104 @@
+#!/bin/zsh
+set -euo pipefail
+
+ROOT="$(cd -- "$(dirname -- "${0:A}")/.." && pwd -P)"
+WEB_HOME="${CODEX_CHATGPT_WEB_HOME:-$HOME/.codex-chatgpt-web}"
+BUN="${COHAB_BUN:-$WEB_HOME/versions/5.0.8-darwin-arm64/runtime/bun}"
+PLIST="$HOME/Library/LaunchAgents/com.opencodex.proxy.plist"
+LABEL="com.opencodex.proxy"
+UID="$(id -u)"
+
+die() {
+  print -u2 -- "cohab: $*"
+  exit 1
+}
+
+require_bun() {
+  [[ -x "$BUN" ]] || die "Bun 1.4.0 absent: $BUN. Lance d'abord /Applications/Codex Web GPT.app."
+}
+
+is_up() {
+  curl -fsS --connect-timeout 2 "$1/healthz" >/dev/null 2>&1
+}
+
+wait_up() {
+  local base="$1"
+  local label="$2"
+  local attempt
+  for attempt in {1..30}; do
+    if is_up "$base"; then return 0; fi
+    sleep 1
+  done
+  die "$label n'a pas répondu sur $base. Consulte: cohab logs"
+}
+
+web_start() {
+  if ! is_up "http://127.0.0.1:17841"; then
+    open -gja "/Applications/Codex Web GPT.app"
+    wait_up "http://127.0.0.1:17841" "Codex Web GPT"
+  fi
+}
+
+proxy_start() {
+  [[ -f "$PLIST" ]] || die "LaunchAgent absent. Exécute: cohab install"
+  if is_up "http://127.0.0.1:10100"; then return 0; fi
+  if launchctl print "gui/$UID/$LABEL" >/dev/null 2>&1; then
+    launchctl kickstart -k "gui/$UID/$LABEL"
+  else
+    launchctl bootstrap "gui/$UID" "$PLIST"
+  fi
+  wait_up "http://127.0.0.1:10100" "OpenCodex"
+}
+
+status() {
+  if is_up "http://127.0.0.1:17841"; then
+    curl -fsS http://127.0.0.1:17841/healthz | jq '{web: {status, version, port, accepting_turns}}'
+  else
+    print -- '{"web":{"status":"down"}}'
+  fi
+
+  if is_up "http://127.0.0.1:10100"; then
+    curl -fsS http://127.0.0.1:10100/healthz | jq '{opencodex: {status, version, port}}'
+    curl -fsS 'http://127.0.0.1:10100/v1/models?client_version=0.0.0' \
+      | jq -r '.models[].slug' \
+      | rg '^(google-antigravity/gemini|chatgpt-web/)' \
+      || true
+  else
+    print -- '{"opencodex":{"status":"down"}}'
+  fi
+}
+
+adopt() {
+  require_bun
+  web_start
+  # This ends the foreground proxy and lets launchd become its sole owner. It therefore
+  # belongs after the active Codex turn has completed.
+  if is_up "http://127.0.0.1:10100"; then
+    "$BUN" "$ROOT/src/cli/index.ts" stop
+  fi
+  launchctl bootout "gui/$UID/$LABEL" 2>/dev/null || true
+  launchctl bootout "user/$UID/$LABEL" 2>/dev/null || true
+  proxy_start
+  status
+}
+
+usage() {
+  cat <<'EOF'
+Usage: cohab <install|adopt|start|status|logs>
+
+  install  Installe le LaunchAgent du fork, sans couper le proxy actif.
+  adopt    Bascule une fois le proxy actuel vers le LaunchAgent.
+  start    Démarre l'app Web et OpenCodex s'ils sont arrêtés.
+  status   Affiche l'état des deux services et les modèles relayés.
+  logs     Affiche les dernières lignes du journal OpenCodex géré.
+EOF
+}
+
+case "${1:-status}" in
+  install) exec "$ROOT/scripts/install-cohab-launchd.zsh" ;;
+  adopt) adopt ;;
+  start) web_start; proxy_start; status ;;
+  status) status ;;
+  logs) tail -n 120 "$HOME/.opencodex/cohab-launchd.log" ;;
+  *) usage; exit 2 ;;
+esac
